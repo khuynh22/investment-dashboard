@@ -1,6 +1,6 @@
 export function parseYahoo(json: unknown): number | null {
   const price = (json as any)?.chart?.result?.[0]?.meta?.regularMarketPrice;
-  return typeof price === "number" && Number.isFinite(price) ? price : null;
+  return typeof price === "number" && Number.isFinite(price) && price > 0 ? price : null;
 }
 
 export function parseStooq(csv: string): number | null {

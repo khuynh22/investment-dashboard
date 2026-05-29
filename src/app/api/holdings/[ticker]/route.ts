@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { isAuthorizedUser } from "@/lib/session";
-import { upsertHolding, deleteHolding, upsertPrice } from "@/lib/db";
+import { upsertHolding, deleteHolding, upsertPrice, holdingExists } from "@/lib/db";
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ ticker: string }> }) {
   if (!(await isAuthorizedUser())) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const { ticker: raw } = await ctx.params;
   const ticker = raw.trim().toUpperCase();
+  // PATCH only edits an existing holding; it must not create one.
+  if (!(await holdingExists(ticker))) return NextResponse.json({ error: "not found" }, { status: 404 });
   const body = await req.json().catch(() => null);
 
   if (body?.quantity !== undefined) {

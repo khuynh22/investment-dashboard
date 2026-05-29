@@ -18,6 +18,11 @@ export async function getHeldTickers(): Promise<string[]> {
   return rows.map((r) => r.ticker);
 }
 
+export async function holdingExists(ticker: string): Promise<boolean> {
+  const { rows } = await sql<{ ticker: string }>`SELECT ticker FROM holdings WHERE ticker = ${ticker}`;
+  return rows.length > 0;
+}
+
 export async function upsertHolding(ticker: string, quantity: number): Promise<void> {
   await sql`
     INSERT INTO holdings (ticker, quantity) VALUES (${ticker}, ${quantity})
