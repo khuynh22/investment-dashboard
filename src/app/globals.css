@@ -65,7 +65,8 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
-  min-width: 560px; /* keeps columns legible; the wrapper scrolls when narrower */
+  min-width: 560px;
+  /* keeps columns legible; the wrapper scrolls when narrower */
 }
 
 /* ---- Add-holding form: inputs grow/wrap on small screens ---- */
@@ -98,9 +99,11 @@ body {
     padding: 16px;
     gap: 16px;
   }
+
   .add-form input {
     flex-basis: 100%;
   }
+
   .add-form button {
     width: 100%;
   }
