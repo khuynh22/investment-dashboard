@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAuthorizedUser } from "@/lib/session";
-import { getHoldings, getPrices, upsertHolding } from "@/lib/db";
+import { getHoldings, getPrices, addToHolding } from "@/lib/db";
 import { buildRows } from "@/lib/portfolio";
 
 export async function GET() {
@@ -17,6 +17,6 @@ export async function POST(req: Request) {
   if (!/^[A-Z.\-]{1,10}$/.test(ticker) || !Number.isFinite(quantity) || quantity <= 0) {
     return NextResponse.json({ error: "invalid ticker or quantity" }, { status: 400 });
   }
-  await upsertHolding(ticker, quantity);
+  await addToHolding(ticker, quantity); // adding an existing ticker accumulates shares
   return NextResponse.json({ ok: true });
 }

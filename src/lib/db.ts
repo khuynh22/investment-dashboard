@@ -23,10 +23,18 @@ export async function holdingExists(ticker: string): Promise<boolean> {
   return rows.length > 0;
 }
 
+// Set a holding's quantity to an absolute value (used by inline edit).
 export async function upsertHolding(ticker: string, quantity: number): Promise<void> {
   await sql`
     INSERT INTO holdings (ticker, quantity) VALUES (${ticker}, ${quantity})
     ON CONFLICT (ticker) DO UPDATE SET quantity = EXCLUDED.quantity`;
+}
+
+// Add shares to a holding, creating it if absent (used by the "Add holding" form).
+export async function addToHolding(ticker: string, quantity: number): Promise<void> {
+  await sql`
+    INSERT INTO holdings (ticker, quantity) VALUES (${ticker}, ${quantity})
+    ON CONFLICT (ticker) DO UPDATE SET quantity = holdings.quantity + EXCLUDED.quantity`;
 }
 
 export async function deleteHolding(ticker: string): Promise<void> {
