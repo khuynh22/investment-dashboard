@@ -27,7 +27,7 @@ export function AddHoldingForm() {
 
   const inp = { padding: 8, borderRadius: 6, border: "1px solid #333", background: "#111", color: "#eee" };
   return (
-    <form onSubmit={submit} style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+    <form onSubmit={submit} className="add-form">
       <input style={inp} placeholder="Ticker (e.g. AAPL)" value={ticker} onChange={(e) => setTicker(e.target.value)} />
       <input style={inp} placeholder="Quantity" value={quantity} onChange={(e) => setQuantity(e.target.value)} inputMode="decimal" />
       <button type="submit" style={{ padding: "8px 16px", borderRadius: 8, cursor: "pointer" }}>Add holding</button>

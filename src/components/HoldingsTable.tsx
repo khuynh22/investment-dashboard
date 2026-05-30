@@ -61,80 +61,82 @@ export function HoldingsTable({ rows }: { rows: Row[] }) {
   }
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
-      <thead>
-        <tr style={{ opacity: 0.7, textAlign: "right" }}>
-          <th style={left}>Ticker</th><th style={cell}>Qty</th><th style={cell}>Price</th>
-          <th style={cell}>Source</th><th style={cell}>Value</th><th style={cell}>%</th><th style={cell}>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r) => {
-          const isEditing = editing === r.ticker;
-          return (
-            <tr key={r.ticker}>
-              <td style={left}><b>{r.ticker}</b></td>
-              <td style={cell}>
-                {isEditing ? (
-                  <input
-                    style={inp}
-                    value={qtyDraft}
-                    onChange={(e) => setQtyDraft(e.target.value)}
-                    inputMode="decimal"
-                    autoFocus
-                    aria-label={`Quantity for ${r.ticker}`}
-                  />
-                ) : (
-                  r.quantity
-                )}
-              </td>
-              <td style={cell}>
-                {isEditing ? (
-                  <input
-                    style={inp}
-                    value={priceDraft}
-                    onChange={(e) => setPriceDraft(e.target.value)}
-                    inputMode="decimal"
-                    placeholder="auto"
-                    aria-label={`Manual price for ${r.ticker}`}
-                  />
-                ) : r.price != null ? (
-                  fmt.format(r.price)
-                ) : (
-                  "—"
-                )}
-              </td>
-              <td style={cell}>{r.source ?? "—"}</td>
-              <td style={cell}>{r.marketValue != null ? fmt.format(r.marketValue) : "—"}</td>
-              <td style={cell}>{r.percent != null ? `${r.percent.toFixed(1)}%` : "—"}</td>
-              <td style={cell}>
-                {isEditing ? (
-                  <>
-                    <button style={{ ...btn, color: "#34d399" }} onClick={() => saveEdit(r)} disabled={busy}>
-                      {busy ? "Saving…" : "Save"}
-                    </button>
-                    <button style={btn} onClick={cancelEdit} disabled={busy}>Cancel</button>
-                  </>
-                ) : (
-                  <>
-                    <button style={btn} onClick={() => startEdit(r)}>Edit</button>
-                    <button
-                      style={{ ...btn, color: "#f87171" }}
-                      onClick={() => remove(r.ticker)}
-                      aria-label={`Remove ${r.ticker}`}
-                    >
-                      ✕
-                    </button>
-                  </>
-                )}
-              </td>
-            </tr>
-          );
-        })}
-        {rows.length === 0 && (
-          <tr><td colSpan={7} style={{ ...left, opacity: 0.6, padding: 16 }}>No holdings yet. Add one above.</td></tr>
-        )}
-      </tbody>
-    </table>
+    <div className="table-wrap">
+      <table className="holdings-table">
+        <thead>
+          <tr style={{ opacity: 0.7, textAlign: "right" }}>
+            <th style={left}>Ticker</th><th style={cell}>Qty</th><th style={cell}>Price</th>
+            <th style={cell}>Source</th><th style={cell}>Value</th><th style={cell}>%</th><th style={cell}>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => {
+            const isEditing = editing === r.ticker;
+            return (
+              <tr key={r.ticker}>
+                <td style={left}><b>{r.ticker}</b></td>
+                <td style={cell}>
+                  {isEditing ? (
+                    <input
+                      style={inp}
+                      value={qtyDraft}
+                      onChange={(e) => setQtyDraft(e.target.value)}
+                      inputMode="decimal"
+                      autoFocus
+                      aria-label={`Quantity for ${r.ticker}`}
+                    />
+                  ) : (
+                    r.quantity
+                  )}
+                </td>
+                <td style={cell}>
+                  {isEditing ? (
+                    <input
+                      style={inp}
+                      value={priceDraft}
+                      onChange={(e) => setPriceDraft(e.target.value)}
+                      inputMode="decimal"
+                      placeholder="auto"
+                      aria-label={`Manual price for ${r.ticker}`}
+                    />
+                  ) : r.price != null ? (
+                    fmt.format(r.price)
+                  ) : (
+                    "—"
+                  )}
+                </td>
+                <td style={cell}>{r.source ?? "—"}</td>
+                <td style={cell}>{r.marketValue != null ? fmt.format(r.marketValue) : "—"}</td>
+                <td style={cell}>{r.percent != null ? `${r.percent.toFixed(1)}%` : "—"}</td>
+                <td style={cell}>
+                  {isEditing ? (
+                    <>
+                      <button style={{ ...btn, color: "#34d399" }} onClick={() => saveEdit(r)} disabled={busy}>
+                        {busy ? "Saving…" : "Save"}
+                      </button>
+                      <button style={btn} onClick={cancelEdit} disabled={busy}>Cancel</button>
+                    </>
+                  ) : (
+                    <>
+                      <button style={btn} onClick={() => startEdit(r)}>Edit</button>
+                      <button
+                        style={{ ...btn, color: "#f87171" }}
+                        onClick={() => remove(r.ticker)}
+                        aria-label={`Remove ${r.ticker}`}
+                      >
+                        ✕
+                      </button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+          {rows.length === 0 && (
+            <tr><td colSpan={7} style={{ ...left, opacity: 0.6, padding: 16 }}>No holdings yet. Add one above.</td></tr>
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }
