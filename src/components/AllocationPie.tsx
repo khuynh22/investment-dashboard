@@ -10,7 +10,7 @@ export function AllocationPie({ data }: { data: { ticker: string; value: number 
     return (
         <ResponsiveContainer width="100%" height={320}>
             <PieChart>
-                <Pie data={data} dataKey="value" nameKey="ticker" cx="50%" cy="50%" outerRadius={120} label={(d) => d.ticker}>
+                <Pie data={data} dataKey="value" nameKey="ticker" cx="50%" cy="50%" outerRadius={120} label={(d) => d.percent >= 0.03 ? d.ticker : ""}>
                     {data.map((_, i) => (
                         <Cell key={i} fill={COLORS[i % COLORS.length]} />
                     ))}
