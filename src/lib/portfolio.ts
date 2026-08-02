@@ -38,10 +38,43 @@ export function totalValue(rows: Row[]): number {
   return rows.reduce((s, r) => s + (r.marketValue ?? 0), 0);
 }
 
+export type Slice = { ticker: string; value: number };
+/** A pie slice; `breakdown` is present only on the aggregated "Other" bucket. */
+export type PieSlice = Slice & { breakdown?: Slice[] };
+
+export const OTHER_TICKER = "Other";
+
 /** Pie slices: only priced holdings, sorted highest -> lowest market value. */
-export function pieData(rows: Row[]): { ticker: string; value: number }[] {
+export function pieData(rows: Row[]): Slice[] {
   return rows
     .filter((r): r is Row & { marketValue: number } => r.marketValue != null && r.marketValue > 0)
     .map((r) => ({ ticker: r.ticker, value: r.marketValue }))
     .sort((a, b) => b.value - a.value);
+}
+
+/**
+ * Folds slices worth less than `minPercent` of the total into a single "Other"
+ * bucket, appended last, which carries its members in `breakdown` for drill-down.
+ * A lone small slice is left as-is — renaming one holding to "Other" hides it for
+ * no gain in readability.
+ */
+export function groupSmallSlices(data: Slice[], minPercent = 1): PieSlice[] {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  if (total <= 0) return data.map((d) => ({ ...d }));
+
+  const large: PieSlice[] = [];
+  const small: Slice[] = [];
+  for (const d of data) {
+    ((d.value / total) * 100 < minPercent ? small : large).push({ ...d });
+  }
+  if (small.length < 2) return data.map((d) => ({ ...d }));
+
+  return [
+    ...large,
+    {
+      ticker: OTHER_TICKER,
+      value: small.reduce((s, d) => s + d.value, 0),
+      breakdown: small,
+    },
+  ];
 }
