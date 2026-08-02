@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { groupSmallSlices, OTHER_TICKER, type Slice } from "@/lib/portfolio";
+import { layoutLabels, PieCallout } from "@/lib/pieLabels";
 
 // Eight entity hues, assigned in fixed order and never cycled past the list
 // (a 9th holding would repeat a hue eight positions away, never adjacent).
@@ -9,10 +10,13 @@ const COLORS = ["#4f8cff", "#34d399", "#fbbf24", "#f472b6", "#a78bfa", "#f87171"
 // "Other" is a bucket, not a holding, so it gets a neutral outside the rotation.
 const OTHER_COLOR = "#94a3b8";
 
+const SURFACE = "#0b0e14";
+const INK = "#e6e6e6";
+
 /** Holdings below this share of the portfolio are folded into the Other bucket. */
 const MIN_SLICE_PERCENT = 1;
-/** Slices below this share stay unlabelled — their text would collide on the rim. */
-const MIN_LABEL_FRACTION = 0.03;
+const CHART_HEIGHT = 340;
+const RADIUS = 100;
 
 const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 
@@ -28,6 +32,16 @@ export function AllocationPie({ data }: { data: Slice[] }) {
     const breakdown = drilled ? otherBreakdown : undefined;
     const view = breakdown ?? slices;
     const total = view.reduce((s, d) => s + d.value, 0);
+
+    const colorOf = (s: Slice, i: number) => (s.ticker === OTHER_TICKER ? OTHER_COLOR : COLORS[i % COLORS.length]);
+
+    // recharts calls the label renderer once per slice, but the layout is global
+    // (labels get pushed apart), so solve it once for the width recharts settled on.
+    let cached: { cx: number; at: ReturnType<typeof layoutLabels> } | null = null;
+    const placements = (cx: number, cy: number) => {
+        if (!cached || cached.cx !== cx) cached = { cx, at: layoutLabels(view, cx, cy, RADIUS, CHART_HEIGHT) };
+        return cached.at;
+    };
 
     return (
         <div>
@@ -53,7 +67,7 @@ export function AllocationPie({ data }: { data: Slice[] }) {
                 ) : null}
             </div>
 
-            <ResponsiveContainer width="100%" height={320}>
+            <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
                 <PieChart>
                     <Pie
                         data={view}
@@ -61,9 +75,17 @@ export function AllocationPie({ data }: { data: Slice[] }) {
                         nameKey="ticker"
                         cx="50%"
                         cy="50%"
-                        outerRadius={120}
-                        // Direct-label the readable slices; Other is always labelled since it is the click target.
-                        label={(d) => (d.percent >= MIN_LABEL_FRACTION || d.ticker === OTHER_TICKER ? d.ticker : "")}
+                        outerRadius={RADIUS}
+                        startAngle={90}
+                        endAngle={-270}
+                        // Leader lines are drawn inside the label element so a line can never
+                        // outlive the text it points at (recharts renders the two separately).
+                        labelLine={false}
+                        label={(p) => {
+                            const at = placements(p.cx, p.cy).get(p.index);
+                            if (!at) return null;
+                            return <PieCallout at={at} label={view[p.index].ticker} color={colorOf(view[p.index], p.index)} />;
+                        }}
                         onClick={(_, i) => {
                             if (view[i]?.ticker === OTHER_TICKER) setDrilled(true);
                         }}
@@ -71,8 +93,8 @@ export function AllocationPie({ data }: { data: Slice[] }) {
                         {view.map((s, i) => (
                             <Cell
                                 key={s.ticker}
-                                fill={s.ticker === OTHER_TICKER ? OTHER_COLOR : COLORS[i % COLORS.length]}
-                                stroke="#0b0e14"
+                                fill={colorOf(s, i)}
+                                stroke={SURFACE}
                                 strokeWidth={2}
                                 cursor={s.ticker === OTHER_TICKER ? "pointer" : "default"}
                             />
@@ -80,7 +102,9 @@ export function AllocationPie({ data }: { data: Slice[] }) {
                     </Pie>
                     <Tooltip
                         formatter={(v: number) => `${fmt.format(v)} · ${((v / total) * 100).toFixed(1)}%`}
-                        contentStyle={{ background: "#0b0e14", border: "1px solid #2a3140", borderRadius: 6 }}
+                        contentStyle={{ background: "#1b2230", border: "1px solid #39445a", borderRadius: 8, padding: "6px 10px" }}
+                        itemStyle={{ color: INK }}
+                        labelStyle={{ color: INK }}
                     />
                 </PieChart>
             </ResponsiveContainer>
